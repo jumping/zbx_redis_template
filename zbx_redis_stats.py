@@ -4,6 +4,7 @@ import sys, redis, json, re, struct, time, socket, argparse
 
 parser = argparse.ArgumentParser(description='Zabbix Redis status script')
 parser.add_argument('hostname',nargs='?')
+parser.add_argument('hostip',nargs='?')
 parser.add_argument('metric',nargs='?')
 parser.add_argument('db',default='none',nargs='?')
 parser.add_argument('-p','--port',dest='redis_port',action='store',help='Redis server port',default=6379,type=int)
@@ -12,7 +13,7 @@ args = parser.parse_args()
 
 zabbix_host = '127.0.0.1'	# Zabbix Server IP
 zabbix_port = 10051			# Zabbix Server Port
-hostname = 'redis.srv.name'	# Name of monitored server like it shows in zabbix web ui display
+#hostname = 'redis.srv.name'	# Name of monitored server like it shows in zabbix web ui display
 
 class Metric(object):
     def __init__(self, host, key, value, clock=None):
@@ -74,8 +75,8 @@ def _recv_all(sock, count):
 
 
 
-if args.hostname and args.metric:
-        client = redis.StrictRedis(host=args.hostname, port=args.redis_port, password=args.redis_pass)
+if args.hostip and args.metric:
+        client = redis.StrictRedis(host=args.hostip, port=args.redis_port, password=args.redis_pass)
 	server_info = client.info()
 
 	if args.metric:
@@ -115,17 +116,17 @@ if args.hostname and args.metric:
 		print ('Not selected metric');
 else:
 
-	client = redis.StrictRedis(host=args.hostname, port=args.redis_port, password=args.redis_pass)
+	client = redis.StrictRedis(host=args.hostip, port=args.redis_port, password=args.redis_pass)
 	server_info = client.info()
 
 	a = []
 	for i in server_info:
 		a.append(Metric(args.hostname, ('redis[%s]' % i), server_info[i]))
 
-	keys = client.keys('*')
+	#keys = client.keys('*')
 	llensum = 0
-	for key in keys:
-		llensum += client.llen(key)
+	#for key in keys:
+	#	llensum += client.llen(key)
 	a.append(Metric(args.hostname, 'redis[llenall]', llensum))
 
 
